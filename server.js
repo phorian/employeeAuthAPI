@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const path = require('path');
 const cors = require('cors');
+const corsOption = require('./config/corsOptions')
 const { logger } = require('./middleware/logEvents');
 const errorHandler= require ('./middleware/errorHandler');
 const PORT = process.env.PORT || 3500;
@@ -9,17 +10,7 @@ const PORT = process.env.PORT || 3500;
 //custom middleware logger
 app.use(logger);
 
-const whitelist = ['https://www.google.com', 'http://127.0.0.1:5500', 'http://localhost:3500'];
-const corsOption = {
-    origin: (origin, callback) => {
-        if (whitelist.indexOf(origin) !== -1 || !origin) {
-            callback(null, true)
-        } else {
-            callback(new Error('Not allowed by CORS'))
-        }
-    },
-    optionsSuccessStatus: 200
-}
+
 app.use(cors(corsOption)); //cross origin resource sharing
 
 /* 
@@ -33,11 +24,11 @@ app.use(express.urlencoded({extended: false})); //builtin middleware for express
 app.use(express.json()); //builtin middleware for json
 
 app.use(express.static(path.join(__dirname, '/public'))); //serve static files
-app.use('/subdir', express.static(path.join(__dirname, '/public'))); //serve static files
 
 //routes
 app.use('/', require('./routes/roots'));
-app.use('/subdir', require('./routes/subdir'));
+app.use('/register', require('./routes/register'));
+app.use('/auth', require('./routes/auth'));
 app.use('/employees', require('./routes/api/employees'));
 
 app.all('*', (req, res) => {
@@ -52,6 +43,5 @@ app.all('*', (req, res) => {
 });
 
 app.use(errorHandler);
-
 
 app.listen(PORT, () => console.log(`server running on port ${PORT}`));
